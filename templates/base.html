@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Deposit Retriever | Justice for Tenants</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, .brand-font { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+    <header class="bg-white border-b border-slate-200 py-6 px-8">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2 group">
+                <div class="bg-blue-600 text-white p-2 rounded-lg group-hover:bg-slate-900 transition-colors">
+                    <i class="fas fa-gavel"></i>
+                </div>
+                <span class="text-xl font-bold brand-font text-slate-800">The Deposit Retriever</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">Server-Side v1.1</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="max-w-4xl mx-auto mt-4 px-6">
+                {% for message in messages %}
+                <div class="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-sm font-medium">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-12 px-8">
+        <div class="max-w-6xl mx-auto text-center">
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mb-4">Powered by Gemini Legal Reasoning & Lob Mailing</p>
+            <p class="text-xs text-slate-400">© 2024 The Deposit Retriever. Not a law firm. Information is for educational purposes only.</p>
+        </div>
+    </footer>
+</body>
+</html>

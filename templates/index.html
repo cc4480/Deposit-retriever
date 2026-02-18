@@ -1,0 +1,53 @@
+
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-24">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div>
+            <h1 class="text-6xl font-bold text-slate-900 leading-tight mb-8">Did your landlord <span class="text-blue-600 italic">steal</span> your deposit?</h1>
+            <p class="text-xl text-slate-500 mb-10 leading-relaxed font-medium">
+                Most tenants never get their full security deposit back. We use state statutes and AI to force landlords to pay what they owe—plus statutory penalties.
+            </p>
+            <div className="flex gap-4">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <i className="fas fa-shield-halved text-blue-600"></i>
+                    <span className="text-sm font-bold text-slate-700">Verified Statutes</span>
+                </div>
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <i className="fas fa-truck-fast text-blue-600"></i>
+                    <span className="text-sm font-bold text-slate-700">Certified Mail</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-12 rounded-[2.5rem] shadow-2xl border border-slate-100">
+            <h2 class="text-2xl font-bold mb-8 text-slate-800">Start Recovery Analysis</h2>
+            <form action="/analyze" method="POST" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Property State</label>
+                    <select name="state" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-700 appearance-none">
+                        {% for state in states %}
+                        <option value="{{ state.state_code }}">{{ state.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Move-out Date</label>
+                        <input type="date" name="move_out_date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-700">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Original Deposit</label>
+                        <input type="number" name="deposit_amount" required placeholder="1200" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-700">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-slate-900 hover:bg-blue-600 text-white font-bold py-5 rounded-2xl shadow-xl transition-all uppercase tracking-widest text-sm">
+                    Calculate Potential Recovery
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

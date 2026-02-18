@@ -1,0 +1,239 @@
+
+{% extends "base.html" %}
+{% block content %}
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex flex-col items-center justify-center text-white px-6 text-center">
+    <div class="mb-8">
+        <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 shadow-2xl"></div>
+    </div>
+    <h2 class="text-3xl font-bold brand-font mb-4">Drafting Your Legal Demand...</h2>
+    <div class="max-w-md space-y-4">
+        <p class="text-slate-300 font-medium flex items-center justify-center gap-3">
+            <i class="fas fa-magnifying-glass-chart text-blue-400"></i>
+            Verifying latest {{ state_law.name }} statutes
+        </p>
+        <p class="text-slate-300 font-medium flex items-center justify-center gap-3">
+            <i class="fas fa-gavel text-blue-400"></i>
+            Applying legal reasoning logic
+        </p>
+        <p class="text-slate-300 font-medium flex items-center justify-center gap-3">
+            <i class="fas fa-pen-fancy text-blue-400"></i>
+            Structuring professional letterhead
+        </p>
+    </div>
+    <div class="mt-12 flex gap-2">
+       <div class="h-1.5 w-6 bg-blue-500 rounded-full animate-pulse"></div>
+       <div class="h-1.5 w-6 bg-blue-400 rounded-full animate-pulse delay-75"></div>
+       <div class="h-1.5 w-6 bg-blue-300 rounded-full animate-pulse delay-150"></div>
+    </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-6 py-12">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 mb-12">
+        <div class="bg-slate-900 p-12 text-center text-white relative">
+            <h2 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4">Maximum Recovery Estimate</h2>
+            <div class="text-7xl font-bold text-blue-400 brand-font mb-4">
+                ${{ "{:,.2f}".format(potential_win) }}
+            </div>
+            <div class="inline-flex items-center gap-2 bg-blue-600/20 text-blue-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border border-blue-600/30">
+                <i class="fas fa-circle-check"></i> {{ state_law.name }} Verified
+            </div>
+        </div>
+
+        <div class="p-12">
+            <div class="mb-12">
+                <h3 class="text-xl font-bold mb-4 text-slate-800">The Verdict</h3>
+                <p class="text-slate-600 leading-relaxed font-medium">
+                    {% if is_late %}
+                    Your landlord is <strong>{{ days_elapsed }} days</strong> past the move-out date. In {{ state_law.name }}, the law requires deposit return or accounting within {{ state_law.return_deadline_days }} days. 
+                    Under <strong>{{ state_law.statute_citation }}</strong>, you are likely entitled to <span class="text-blue-600 font-bold">{{ state_law.bad_faith_multiplier }}x</span> your deposit for this violation.
+                    {% else %}
+                    The legal deadline of {{ state_law.return_deadline_days }} days hasn't passed yet, but if they withhold any part of your deposit unfairly, you can still fight it. We can generate a proactive demand now.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="border-t border-slate-100 pt-12">
+                <h3 class="text-xl font-bold mb-8 text-slate-800">Build Your Case</h3>
+                <form id="demandForm" action="/generate" method="POST" class="space-y-12">
+                    <input type="hidden" name="case_id" value="{{ case.id }}">
+                    <input type="hidden" name="deductions_json" id="deductionsJson">
+                    <input type="hidden" name="evidence_json" id="evidenceJson">
+                    
+                    <!-- DEDUCTIONS SECTION -->
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-100 pb-2">
+                             <div class="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center"><i class="fas fa-calculator"></i></div>
+                             <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Disputed Deductions</h4>
+                        </div>
+                        <p class="text-sm text-slate-500 font-medium">Did the landlord charge you for specific items (cleaning, painting, repairs)? Add them here to dispute them.</p>
+                        
+                        <!-- List container -->
+                        <div id="deductionList" class="space-y-3"></div>
+
+                        <!-- Adder -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 grid gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input id="dedDesc" placeholder="Item (e.g. 'Carpet Cleaning')" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none font-medium">
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                                    <input id="dedAmount" type="number" placeholder="0.00" class="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-4 py-3 text-sm outline-none font-medium">
+                                </div>
+                            </div>
+                            <input id="dedNotes" placeholder="Why is this wrong? (e.g. 'I steam cleaned it myself')" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none font-medium">
+                            <button type="button" onclick="addDeduction()" class="bg-slate-800 text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-700 transition-colors">Add Dispute Item</button>
+                        </div>
+                    </div>
+
+                    <!-- EVIDENCE SECTION -->
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-3 border-b border-slate-100 pb-2">
+                             <div class="w-8 h-8 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center"><i class="fas fa-camera"></i></div>
+                             <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Evidence Log</h4>
+                        </div>
+                        <p class="text-sm text-slate-500 font-medium">List proof you have (photos, videos, emails). We will reference these in the letter.</p>
+                        
+                        <!-- List container -->
+                        <div id="evidenceList" class="space-y-3"></div>
+
+                        <!-- Adder -->
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex gap-4">
+                            <select id="evType" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none font-bold text-slate-600">
+                                <option value="Photo">Photo</option>
+                                <option value="Video">Video</option>
+                                <option value="Email">Email</option>
+                                <option value="Receipt">Receipt</option>
+                            </select>
+                            <input id="evDesc" placeholder="Description (e.g. 'Move-out walkthrough video showing clean floor')" class="flex-grow bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none font-medium">
+                            <button type="button" onclick="addEvidence()" class="bg-slate-800 text-white px-6 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-700 transition-colors">Log</button>
+                        </div>
+                    </div>
+
+                    <!-- PARTIES SECTION -->
+                    <div class="space-y-4 pt-6 border-t border-slate-100">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-2">Parties Involved</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Landlord Name</label>
+                                <input type="text" name="landlord_name" required placeholder="Who holds the deposit?" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Landlord Address</label>
+                                <input type="text" name="landlord_address" required placeholder="Street, City, State ZIP" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Your Full Name</label>
+                                <input type="text" name="tenant_name" required placeholder="Name on Lease" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Your Current Address</label>
+                                <input type="text" name="tenant_address" required placeholder="Where to send the check?" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Additional Narrative (Optional)</label>
+                            <textarea name="custom_notes" placeholder="Any specific agreements or details not covered above?" class="w-full h-24 bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-5 rounded-2xl shadow-xl transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3">
+                        Draft Legal Demand <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // State storage
+    let deductions = [];
+    let evidence = [];
+
+    function updateHiddenInputs() {
+        document.getElementById('deductionsJson').value = JSON.stringify(deductions);
+        document.getElementById('evidenceJson').value = JSON.stringify(evidence);
+    }
+
+    // --- Deductions Logic ---
+    function addDeduction() {
+        const desc = document.getElementById('dedDesc').value;
+        const amount = document.getElementById('dedAmount').value;
+        const notes = document.getElementById('dedNotes').value;
+
+        if(!desc || !amount) return alert("Please enter description and amount");
+
+        deductions.push({ id: Date.now(), description: desc, amount: amount, notes: notes });
+        renderDeductions();
+        
+        // Clear inputs
+        document.getElementById('dedDesc').value = '';
+        document.getElementById('dedAmount').value = '';
+        document.getElementById('dedNotes').value = '';
+        updateHiddenInputs();
+    }
+
+    function removeDeduction(id) {
+        deductions = deductions.filter(d => d.id !== id);
+        renderDeductions();
+        updateHiddenInputs();
+    }
+
+    function renderDeductions() {
+        const list = document.getElementById('deductionList');
+        list.innerHTML = deductions.map(d => `
+            <div class="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+                <div class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center font-bold text-xs"><i class="fas fa-minus"></i></div>
+                <div class="flex-grow">
+                    <div class="flex justify-between font-bold text-slate-800">
+                        <span>${d.description}</span>
+                        <span>$${d.amount}</span>
+                    </div>
+                    <div class="text-xs text-slate-500">${d.notes || 'No notes'}</div>
+                </div>
+                <button type="button" onclick="removeDeduction(${d.id})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash"></i></button>
+            </div>
+        `).join('');
+    }
+
+    // --- Evidence Logic ---
+    function addEvidence() {
+        const type = document.getElementById('evType').value;
+        const desc = document.getElementById('evDesc').value;
+
+        if(!desc) return alert("Please enter a description");
+
+        evidence.push({ id: Date.now(), type: type, description: desc });
+        renderEvidence();
+
+        document.getElementById('evDesc').value = '';
+        updateHiddenInputs();
+    }
+
+    function removeEvidence(id) {
+        evidence = evidence.filter(e => e.id !== id);
+        renderEvidence();
+        updateHiddenInputs();
+    }
+
+    function renderEvidence() {
+        const list = document.getElementById('evidenceList');
+        list.innerHTML = evidence.map(e => `
+            <div class="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div class="text-xs font-black uppercase tracking-widest text-slate-400 bg-white px-2 py-1 rounded border border-slate-100">${e.type}</div>
+                <div class="flex-grow text-sm font-medium text-slate-700">${e.description}</div>
+                <button type="button" onclick="removeEvidence(${e.id})" class="text-slate-300 hover:text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+        `).join('');
+    }
+
+    // Submit Handling
+    document.getElementById('demandForm').addEventListener('submit', function() {
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> Generating...';
+    });
+</script>
+{% endblock %}
